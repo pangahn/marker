@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no,
+            width=device-width">
+        <title>AMAP MAKERS</title>
+        <style>
+        html, body, #container {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <script src="https://webapi.amap.com/maps?v=1.4.15"></script>
+        <script>
+            // 获取 URL 参数中的标记点信息
+            var urlParams = new URLSearchParams(window.location.search);
+            var markerStr = urlParams.get('markers');
+
+            // 将标记点信息按分号进行分隔，得到每个标记点的经纬度和文字描述
+            var markers = markerStr.split(';');
+            console.log(markers);
+
+            // 定义坐标数组
+            var locations = [];
+            var texts = [];
+
+            // 循环处理每个坐标
+            for (var i = 0; i < markers.length; i++) {
+                // 解析坐标字符串，获取经度和纬度
+                var parts = markers[i].split(',');
+                var longitude = parseFloat(parts[0]);
+                var latitude = parseFloat(parts[1]);
+                var markerText = parts[2];
+
+                // 添加经纬度信息到坐标数组中
+                locations.push([longitude, latitude]);
+                texts.push(markerText)
+            }
+
+            function getCenterPoint(locations) {
+                var totalLat = 0, totalLng = 0;
+                var len = locations.length;
+                for (var i = 0; i < len; i++) {
+                totalLat += locations[i][0];
+                totalLng += locations[i][1];
+                }
+                var centerLat = totalLat / len;
+                var centerLng = totalLng / len;
+                return [centerLat, centerLng];
+            }
+            var center = getCenterPoint(locations);
+
+            // 初始化地图
+            var map = new AMap.Map('container', {
+                center: center, // 地图中心点，取第一个标记点的经度为中心点
+                zoom: 13 // 地图缩放级别
+            });
+
+            // 循环处理每个标记点
+            for (var i = 0; i < markers.length; i++) {
+                // 创建标记点
+                var marker = new AMap.Marker({
+                    position: locations[i], // 标记点位置
+                    map: map // 所属地图
+                });
+
+                // 添加标记点文字描述
+                var text = new AMap.Text({
+                    text: texts[i], // 文字内容
+                    position: locations[i], // 文字位置
+                    offset: new AMap.Pixel(0, -50), // 偏移量
+                    map: map, // 所属地图
+                    style: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.5)', // 背景色为白色半透明
+                        color: 'red', // 文字颜色为黑色
+                        fontWeight: 'bold' // 文本加粗
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>
